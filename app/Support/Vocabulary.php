@@ -84,14 +84,15 @@ final class Vocabulary
     public static function undergraduateDegrees(): array
     {
         return [
-            'BSc'    => 'BSc',
-            'BA'     => 'BA',
-            'BBA'    => 'BBA',
-            'BEng'   => 'BEng',
-            'LLB'    => 'LLB',
-            'MBBS'   => 'MBBS',
+            'BSc'     => 'BSc',
+            'BA'      => 'BA',
+            'BBA'     => 'BBA',
+            'BEng'    => 'BEng',
+            'BArch'   => 'BArch',
+            'LLB'     => 'LLB',
+            'MBBS'    => 'MBBS',
             'Diploma' => 'Diploma',
-            'None'   => 'None',
+            'None'    => 'None',
         ];
     }
 
@@ -99,12 +100,13 @@ final class Vocabulary
     public static function postgraduateDegrees(): array
     {
         return [
-            'MSc'  => 'MSc',
-            'MA'   => 'MA',
-            'MBA'  => 'MBA',
+            'MSc'   => 'MSc',
+            'MA'    => 'MA',
+            'MBA'   => 'MBA',
+            'MArch' => 'MArch',
             'MPhil' => 'MPhil',
-            'PhD'  => 'PhD',
-            'None' => 'None',
+            'PhD'   => 'PhD',
+            'None'  => 'None',
         ];
     }
 

@@ -1,0 +1,31 @@
+# Front controller: send everything that is not a real file to index.php.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Works whether the app is at the domain root or in a subdirectory.
+    RewriteBase /
+
+    # Serve existing files and directories (CSS, JS, uploads) directly.
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Uploaded files are data, never code. Even if someone slips a polyglot past
+# the image check, this stops Apache from ever executing it.
+<Directory "uploads">
+    php_flag engine off
+    Options -ExecCGI
+    AddType text/plain .php .phtml .php3 .php4 .php5 .php7 .php8 .phps
+</Directory>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Never list a directory.
+Options -Indexes

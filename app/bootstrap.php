@@ -29,6 +29,7 @@ spl_autoload_register(static function (string $class): void {
 });
 
 require BASE_PATH . '/app/helpers.php';
+require BASE_PATH . '/app/icons.php';
 
 // --------------------------------------------------------------------- config
 $configFile = BASE_PATH . '/config/config.php';

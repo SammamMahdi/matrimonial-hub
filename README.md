@@ -9,7 +9,20 @@ A matchmaking web application — create a profile, say who you are looking for,
 
 This is a ground-up rebuild of [Matrimonial-Project-370](https://github.com/SammamMahdi/Matrimonial-Project-370), a CSE370 database course project. Same features, same MySQL-backed idea — rewritten with a real structure, parameterised queries throughout, working authorisation, and an interface that was designed rather than accumulated.
 
-> **Status — interface layer in progress.** The core, domain layer, controllers and routes are in place and are what the sections below describe. The view templates and stylesheet land in the next commit; until then the routes will not render. This note comes out when the UI is in.
+![The landing page](docs/screenshots/landing.png)
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/browse.png" alt="Browsing ranked matches"><br><em>Browse — every profile scored against your saved preferences, with the reasons behind the number.</em></td>
+<td width="50%"><img src="docs/screenshots/chat.png" alt="Chat with a match"><br><em>Chat — opens only between members who have both accepted.</em></td>
+</tr>
+<tr>
+<td width="50%"><img src="docs/screenshots/dashboard.png" alt="Member dashboard"><br><em>Dashboard — real counts, not the hard-coded ones the original displayed.</em></td>
+<td width="50%"><img src="docs/screenshots/admin.png" alt="Admin console"><br><em>Admin console — behind its own session, not the member one.</em></td>
+</tr>
+</table>
+
+<sub>The interface ships in light and dark; the shots above are a mix of both. Every screenshot is the running app against the seed data in `database/seed.sql`.</sub>
 
 ---
 
@@ -23,7 +36,9 @@ This is a ground-up rebuild of [Matrimonial-Project-370](https://github.com/Samm
 - [Requirements](#requirements)
 - [Getting started](#getting-started)
 - [Security](#security)
+- [Design](#design)
 - [Project layout](#project-layout)
+- [Verification](#verification)
 - [Credits](#credits)
 
 ---
@@ -224,6 +239,16 @@ What the rebuild does, and why:
 
 Nothing here is a substitute for HTTPS and a database user with only the privileges it needs.
 
+## Design
+
+One stylesheet, `public/assets/css/app.css`, built on CSS custom properties. The original had a different visual language in every file — a monochrome chat card, a coral admin panel, a pink request inbox, and a stylesheet left over from an unrelated student CRUD project — plus an `@import` for *Product Sans*, a proprietary font Google Fonts does not serve, so every page silently fell back to Arial.
+
+- **Tokens, not overrides.** Every theme-dependent colour is a token defined once per theme. A component that needs a different colour in dark mode reads `--tint`; it does not carry its own `[data-theme="dark"]` rule. That is what keeps light and dark from drifting apart.
+- **Dark mode** follows the system by default and the toggle overrides it in either direction, stamped before first paint so there is no white flash.
+- **Motion with a purpose** — scroll reveals, a count-up on the stats, bubble entrances. All of it is bound to an `IntersectionObserver` that fires on load, so nothing can end up permanently invisible the way the original's testimonials did on a short viewport. `prefers-reduced-motion` removes every animation and transform.
+- **Progressive enhancement.** Forms post normally, links navigate, content is visible. JavaScript upgrades the chat to a cursor-based poll and the nav to a drawer; without it the site still works.
+- **No binary chrome.** The hero is inline SVG — a gradient with an alpona rosette and marigold strings — drawn rather than photographed. The original streamed a 97 MB `videoplayback.mp4` and a 28 MB `weddingbackground1.mp4` before the page could paint. Missing profile photos become a generated initials avatar, which also removes the original's three different broken `default-profile.png` paths.
+
 ## Project layout
 
 ```
@@ -250,8 +275,25 @@ matrimonial-hub/
 └── README.md
 ```
 
+## Verification
+
+This was not written blind. It was built against a live MariaDB 10.11 and driven end to end before release:
+
+- Every PHP file passes `php -l`.
+- Every route returns what it should, and eleven pages render with **zero** notices, warnings or deprecations.
+- **Authorisation was tested by attacking it.** A logged-in member cannot reach `/admin` (302 to the admin login). Opening `/chat/{id}` for a member you have not matched with returns **403**, and it flips to 200 the moment the match is accepted. Accepting a request addressed to somebody else leaves the row untouched in the database — verified with a `SELECT`, not by trusting the redirect.
+- A `POST` without a CSRF token is rejected.
+- Registration creates the user, profile and preference rows in one transaction; under-18 and duplicate emails are refused.
+- Saving a profile **preserves the address and phone number** — the specific data loss the original's `REPLACE INTO` caused on every save.
+- `O'Brien & Sons` survives a save/render round trip intact, and an apostrophe sent through chat is stored as typed.
+- Match scores are **identical across repeated loads** of the same page. That is the whole difference from `rand(70, 100)`.
+
+Two bugs were found this way and fixed rather than shipped: MariaDB rejects a `CHECK` constraint on any column carrying `ON UPDATE CASCADE` (so the cascade went, since `user_id` is immutable and can never cascade), and eight component colours had dark-mode rules that only applied to the manual toggle and not to system dark — which is why they are tokens now.
+
 ## Credits
 
 Built on the original **Matrimonial-Project-370** by Sammam Mahdi and team, a CSE370 (Database Systems) project at BRAC University. The feature set, the domain and the idea are theirs; this repository is a structural and visual rebuild of it.
+
+The demo people in `database/seed.sql` are invented, and the hero artwork is drawn in SVG. No photographs of real people are used anywhere — the original's "client stories" were stock photographs of identifiable couples with invented testimonials written underneath them, which this rebuild does not carry over.
 
 Licensed under the [MIT License](LICENSE).
